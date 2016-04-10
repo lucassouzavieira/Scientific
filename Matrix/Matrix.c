@@ -1,6 +1,8 @@
-#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
-#include "SquareMatrix.h"
+#include <gmp.h>
+#include "Matrix.h"
 
 // Cria uma nova matriz de números aleatórios
 __int64** newMatrix(unsigned int order) 
