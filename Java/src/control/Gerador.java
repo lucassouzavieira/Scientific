@@ -10,7 +10,7 @@ public class Gerador {
 		
 		for(int i = 0; i < a ; i++){
 			for(int j = 0; j < b ; j++){
-				x[i][j] = (gerador.nextInt());
+				x[i][j] = (gerador.nextInt(10));
 			}
 	    }
 		

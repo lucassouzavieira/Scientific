@@ -143,11 +143,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Matrix\Matrix.h" />
-    <ClInclude Include="Matrix\SquareMatrix.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Matrix\Matrix.cpp" />
     <ClCompile Include="Matrix\SquareMatrix.cpp" />
   </ItemGroup>
   <ItemGroup>
