@@ -1,25 +1,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <gmp.h>
 #include "Matrix.h"
 
+#define DEBUG
+
 // Cria uma nova matriz de números aleatórios
-__int64** newMatrix(unsigned int order) 
+int64_t** newMatrix(unsigned int order) 
 {
-	__int64** matrix;
+	int64_t**	matrix;
+	int			balance;
+
 	if (order < 2)
 		return NULL;
 	// Aloca a memória
-	matrix = (__int64**)malloc(order*sizeof(__int64));
+	matrix = (int64_t**)malloc(order*sizeof(int64_t));
 	for (int i = 0; i < order; i++)
-		matrix[i] = (__int64*)malloc(order*sizeof(__int64));
+		matrix[i] = (int64_t*)malloc(order*sizeof(int64_t));
 	// Preenche inteiros aleatórios para os elementos da Matriz
 	srand(time(NULL));
 	_sleep(1000);
 	for (int i = 0; i < order; i++) {
 		for (int j = 0; j < order; j++) {
-			int balance = -300 + rand() % 500;
+			balance = -300 + rand() % 500;
 			matrix[i][j] = (balance + rand() % 200);
 		}
 	}
@@ -27,17 +30,20 @@ __int64** newMatrix(unsigned int order)
 }
 
 // Soma duas matrizes
-__int64** sum(__int64** firstMatrix, __int64** sndMatrix, unsigned int order)
+int64_t** sum(int64_t** firstMatrix, int64_t** sndMatrix, unsigned int order)
 {
+	int64_t**	matrix;
+	clock_t		startTime;
+	clock_t		endTime;
+	double		executionTime;
+
 	if (order < 2)
 		return NULL;
-	__int64** matrix;
 	// Aloca memória
-	matrix = (__int64**)malloc(order*sizeof(__int64));
+	matrix = (int64_t**)malloc(order*sizeof(int64_t));
 	for (int i = 0; i < order; i++)
-		matrix[i] = (__int64*)malloc(order*sizeof(__int64));
+		matrix[i] = (int64_t*)malloc(order*sizeof(int64_t));
 	// Soma
-	clock_t startTime, endTime, executionTime;
 	startTime = clock();
 	for (int i = 0; i < order; i++) {
 		for (int j = 0; j < order; j++) {
@@ -45,24 +51,29 @@ __int64** sum(__int64** firstMatrix, __int64** sndMatrix, unsigned int order)
 		}
 	}
 	endTime = clock();
-	executionTime = ((endTime - startTime)*(1000 / CLOCKS_PER_SEC));
-	std::cout << "Time: " << executionTime << std::endl;
+	executionTime = (double)((endTime - startTime) * 1000 / CLOCKS_PER_SEC);
+#ifdef DEBUG
+	printf("\nTime: %.2f\n", executionTime);
+#endif
 	return matrix;
 }
 
 // Multiplica duas matrizes
-__int64** product(__int64** firstMatrix, __int64** sndMatrix, unsigned int order)
+int64_t** product(int64_t** firstMatrix, int64_t** sndMatrix, unsigned int order)
 {
+	int64_t**	matrix;
+	clock_t		startTime;
+	clock_t		endTime;
+	double		executionTime;
+
 	if (order < 2)
 		return NULL;
-	__int64** matrix;
 	// Aloca memória
-	matrix = (__int64**)malloc(order*sizeof(__int64));
+	matrix = (int64_t**)malloc(order*sizeof(int64_t));
 	for (int i = 0; i < order; i++)
-		matrix[i] = (__int64*)malloc(order*sizeof(__int64));
+		matrix[i] = (int64_t*)malloc(order*sizeof(int64_t));
 	// Produto
-	__int64 product = 0;
-	clock_t startTime, endTime, executionTime;
+	int64_t product = 0;
 	startTime = clock();
 	for (int i = 0; i < order; i++) {
 		for (int j = 0; j < order; j++) {
@@ -74,23 +85,186 @@ __int64** product(__int64** firstMatrix, __int64** sndMatrix, unsigned int order
 		}
 	}
 	endTime = clock();
-	executionTime = ((endTime - startTime)*(1000 / CLOCKS_PER_SEC));
-	std::cout << "Time: " << executionTime << std::endl;
+	executionTime = (double)((endTime - startTime) * 1000 / CLOCKS_PER_SEC);
+#ifdef DEBUG
+	printf("\nTime: %.2f\n", executionTime);
+#endif 
 	return matrix;
 }
 
-// Retorna a tranposta de uma matriz
-__int64** transpose(__int64** matrix, unsigned int order)
+// Divide as duas matrizes em blocos, e efetua a multiplicação de cada uma
+int64_t** getBlock(int64_t** matrix, unsigned int order, unsigned int blockNumber)
 {
+	unsigned int	elements = order*order;
+	unsigned int	blockOrder = order / 2;
+	int64_t**		block = NULL;
+
+	if ((elements % 4 != 0) || (matrix == NULL)){
+		printf("Size error \n");
+		return NULL;
+	}
+	
+	block = (int64_t**)malloc(blockOrder * sizeof(int64_t));
+	for (int i = 0; i < order; i++)
+		block[i] = (int64_t*)malloc(blockOrder * sizeof(int64_t));
+
+	switch (blockNumber)
+	{
+	default:
+		// Retorna bloco 1, por padrão
+		for (int i = 0; i < blockOrder; i++) {
+			for (int j = 0; j < blockOrder; j++) {
+				block[i][j] = matrix[i][j];
+			}
+		}
+		break;
+	case 1:
+		// Bloco 1
+		for (int i = 0; i < blockOrder; i++) {
+			for (int j = 0; j < blockOrder; j++) {
+				block[i][j] = matrix[i][j];
+			}
+		}
+		break;
+	case 2:
+		// Bloco 2
+		for (int i = 0; i < blockOrder; i++) {
+			for (int j = 0; j < blockOrder; j++) {
+				block[i][j] = matrix[i + blockOrder][j];
+			}
+		}
+		break;
+	case 3:
+		// Bloco 3
+		for (int i = 0; i < blockOrder; i++) {
+			for (int j = 0; j < blockOrder; j++) {
+				block[i][j] = matrix[i][j + blockOrder];
+			}
+		}
+		break;
+	case 4:
+		// Bloco 4
+		for (int i = 0; i < blockOrder; i++) {
+			for (int j = 0; j < blockOrder; j++) {
+				block[i][j] = matrix[i + blockOrder][j + blockOrder];
+			}
+		}
+		break;
+	}
+	return block;
+}
+
+// Forma uma matriz a partir dos blocos
+int64_t ** mergeBlocks(int64_t ** firstBlock, int64_t ** sndBlock, int64_t ** thrdBlock, int64_t ** fourthBlock, unsigned int order)
+{
+	unsigned int	matrixOrder = 2*order;
+	int64_t**		matrix;
+
+	// Aloca memória
+	matrix = (int64_t**)malloc(matrixOrder * sizeof(int64_t));
+	for (int i = 0; i < matrixOrder; i++)
+		matrix[i] = (int64_t*)malloc(matrixOrder * sizeof(int64_t));
+
+	// Junta os elementos dos blocos numa única matriz
+	// Bloco 1
+	for (int i = 0; i < order; i++) {
+		for (int j = 0; j < order; j++) {
+			matrix[i][j] = firstBlock[i][j];
+		}
+	}
+	// Bloco 2
+	for (int i = 0; i < order; i++) {
+		for (int j = 0; j < order; j++) {
+			matrix[i + order][j] = sndBlock[i][j];
+		}
+	}
+	// Bloco 3
+	for (int i = 0; i < order; i++) {
+		for (int j = 0; j < order; j++) {
+			matrix[i][j + order] = thrdBlock[i][j];
+		}
+	}
+	// Bloco 4
+	for (int i = 0; i < order; i++) {
+		for (int j = 0; j < order; j++) {
+			matrix[i + order][j + order] = fourthBlock[i][j];
+		}
+	}
+#ifdef DEBUG
+	//print(matrix, matrixOrder);
+#endif 
+	return matrix;
+}
+
+int64_t** blockProduct(int64_t** firstMatrix, int64_t** sndMatrix, unsigned int order)
+{
+	int64_t**		firstMatrixBlockA;
+	int64_t**		firstMatrixBlockB;
+	int64_t**		firstMatrixBlockC;
+	int64_t**		firstMatrixBlockD;
+	int64_t**		sndMatrixBlockA;
+	int64_t**		sndMatrixBlockB;
+	int64_t**		sndMatrixBlockC;
+	int64_t**		sndMatrixBlockD;
+	int64_t**		firstBlock;
+	int64_t**		sndBlock;
+	int64_t**		thrdBlock;
+	int64_t**		fourthBlock;
+	int64_t**		matrix;
+	int64_t			productValue;
+	clock_t			startTime;
+	clock_t			endTime;
+	double			executionTime;
+
 	if (order < 2)
 		return NULL;
-	__int64** tranpose;
 	// Aloca memória
-	tranpose = (__int64**)malloc(order*sizeof(__int64));
+	matrix = (int64_t**)malloc(order * sizeof(int64_t));
 	for (int i = 0; i < order; i++)
-		tranpose[i] = (__int64*)malloc(order*sizeof(__int64));
+		matrix[i] = (int64_t*)malloc(order * sizeof(int64_t));
+	// Produto		
+	// Divide as matrizes em blocos
+	firstMatrixBlockA = getBlock(firstMatrix, order, 1);
+	firstMatrixBlockB = getBlock(firstMatrix, order, 2);
+	firstMatrixBlockC = getBlock(firstMatrix, order, 3);
+	firstMatrixBlockD = getBlock(firstMatrix, order, 4);
+	sndMatrixBlockA = getBlock(sndMatrix, order, 1);
+	sndMatrixBlockB = getBlock(sndMatrix, order, 2);
+	sndMatrixBlockC = getBlock(sndMatrix, order, 3);
+	sndMatrixBlockD = getBlock(sndMatrix, order, 4);
+
+	startTime = clock();
+	firstBlock	= product(firstMatrixBlockA, sndMatrixBlockA, order / 2);
+	sndBlock = product(firstMatrixBlockB, sndMatrixBlockB, order / 2);
+	thrdBlock = product(firstMatrixBlockC, sndMatrixBlockC, order / 2);
+	fourthBlock = product(firstMatrixBlockD, sndMatrixBlockD, order / 2);
+	matrix = mergeBlocks(firstBlock, sndBlock, thrdBlock, fourthBlock, order / 2);
+
+	endTime = clock();
+
+	executionTime = (double)((endTime - startTime) * 1000 / CLOCKS_PER_SEC);
+#ifdef DEBUG
+	printf("\nTime: %.2f\n", executionTime);
+#endif
+	return matrix;
+
+}
+
+// Retorna a tranposta de uma matriz
+int64_t** transpose(int64_t** matrix, unsigned int order)
+{
+	int64_t**	tranpose;
+	clock_t		startTime;
+	clock_t		endTime;
+	double		executionTime;
+
+	if (order < 2)
+		return NULL;
+	// Aloca memória
+	tranpose = (int64_t**)malloc(order*sizeof(int64_t));
+	for (int i = 0; i < order; i++)
+		tranpose[i] = (int64_t*)malloc(order*sizeof(int64_t));
 	// Transpose
-	clock_t startTime, endTime, executionTime;
 	startTime = clock();
 	for (int i = 0; i < order; i++) {
 		for (int j = 0; j < order; j++) {
@@ -98,37 +272,41 @@ __int64** transpose(__int64** matrix, unsigned int order)
 		}
 	}
 	endTime = clock();
-	executionTime = ((endTime - startTime)*(1000 / CLOCKS_PER_SEC));
-	std::cout << "Time: " << executionTime << std::endl;
+	executionTime = (double)((endTime - startTime) * 1000 / CLOCKS_PER_SEC);
+	printf("\nTime: %.2f\n", executionTime);
 	return tranpose;
 }
 
 // Retorna a linha da matriz
-__int64* getRow(__int64** matrix, unsigned int row, unsigned int order)
+int64_t* getRow(int64_t** matrix, unsigned int row, unsigned int order)
 {
-	if (row < order || row < 0)
+	if (row > order || row < 1)
 		return NULL;
-	return matrix[row];
+	return matrix[row - 1];
 }
 
 // Retorna a coluna da matriz
-__int64* getColumn(__int64** matrix, unsigned int column, unsigned int order)
+int64_t* getColumn(int64_t** matrix, unsigned int column, unsigned int order)
 {
-	if (column > order || column < 0)
+	int64_t*	matrixColumn;
+
+	if (column > order || column < 1)
 		return NULL;
-	__int64* matrixColumn = (__int64*)malloc(order*sizeof(__int64));
+	matrixColumn = (int64_t*)malloc(order*sizeof(int64_t));
 	for (int i = 0; i < order; i++) {
-		matrixColumn[i] = matrix[i][column];
+		matrixColumn[i] = matrix[i][column - 1];
 	}
 	return matrixColumn;
 }
 
 // Retorna a diagonal de uma matriz
-__int64* getDiagonal(__int64** matrix, unsigned int order)
+int64_t* getDiagonal(int64_t** matrix, unsigned int order)
 {
+	int64_t*	diagonal;
+
 	if (order < 2)
 		return NULL;
-	__int64* diagonal = (__int64*)malloc(order*sizeof(__int64));
+	diagonal = (int64_t*)malloc(order*sizeof(int64_t));
 	for (int i = 0; i < order; i++) {
 		diagonal[i] = matrix[i][i];
 	}
@@ -136,14 +314,14 @@ __int64* getDiagonal(__int64** matrix, unsigned int order)
 }
 
 // Imprime a matriz
-void print(__int64** matrix, unsigned int order) 
+void print(int64_t** matrix, unsigned int order) 
 {
 	if (order < 2)
 		return;
 	for (int i = 0; i < order; i++) {
 		for (int j = 0; j < order; j++) {
-			std::cout << matrix[i][j] << "\t";
+			printf("%ld\t", matrix[i][j]);
 		}
-		std::cout << std::endl;
+		printf("\n");
 	}
 }
