@@ -7,7 +7,7 @@ function [soma] = SomaInteiros(n)
   if n < 0
     disp("Numero precisa ser positivo");
     return;
-   endif
+  endif
   
   for i = 1 : n
     soma = soma + i;
