@@ -4,7 +4,7 @@
 function [] = Pares(n)
    
    if n < 0
-    disp("Numero precisa ser positivo");
+    disp('Numero precisa ser positivo');
     return;
    endif
    
