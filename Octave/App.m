@@ -31,5 +31,13 @@ function [] = printMenu()
     b = input('Digite um valor inteiro e positivo: ')
     c = input('Digite um valor inteiro e positivo: ')
     Triangulo(a, b, c)
+  endif  
+  
+  if(option == 4)
+    disp('Entre com tres valores: ')
+    a = input('Digite um valor inteiro e positivo: ')
+    b = input('Digite um valor inteiro e positivo: ')
+    c = input('Digite um valor inteiro e positivo: ')
+    Ordenacao(a, b, c)
   endif
 endfunction
